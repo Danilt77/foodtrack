@@ -183,7 +183,7 @@ const ProfilePage = () => {
             </>
           ) : (
             <>
-              <div>{user?.email}</div>
+              <div>{user?.email ? user?.email : "Не указан"}</div>
               <Button
                 variant="outline"
                 size="sm"
