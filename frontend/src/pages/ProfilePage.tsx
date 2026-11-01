@@ -9,7 +9,7 @@ import { RefreshCw } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import axios from "axios"
 import { Field, FieldError } from "@/components/ui/field"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { PATHS } from "@/constants/routes"
 
 const ProfilePage = () => {
