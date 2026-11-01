@@ -1,6 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from .serializers import DailyFoodLogSerializer, FoodEntrySerializer
 from .models import DailyFoodLog, FoodEntry
+from .parser import search_products
 
 class DailyFoodLogViewSet(ModelViewSet):
   serializer_class = DailyFoodLogSerializer
@@ -27,3 +31,17 @@ class FoodEntryViewSet(ModelViewSet):
       date=serializer.validated_data["date"],
     )
     serializer.save(daily_food_log=daily_food_log)
+
+@api_view(["GET"])
+def product_search(request):
+    query = request.query_params.get("q", "").strip()
+
+    if not query:
+        return Response(
+            {"error": "Введите название продукта"},
+            status=400
+        )
+
+    products = search_products(query)
+
+    return Response(products)
