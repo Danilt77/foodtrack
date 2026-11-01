@@ -42,6 +42,8 @@ interface FormData {
 }
 
 const calculateDailyCalories = (data: FormData) => {
+  const hasEmptyFields = Object.values(data).some((value) => value === "")
+  if (hasEmptyFields) return null
   const {
     weight: w,
     height: h,
@@ -76,7 +78,6 @@ const CalculateCaloriesPage = () => {
   }, [formData])
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    console.log(formData)
   }
   const handleSave = async () => {
     setError("")
