@@ -17,7 +17,6 @@ import {
   FieldSeparator,
   FieldError,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import {
   InputGroup,
   InputGroupInput,
@@ -29,6 +28,15 @@ import { createFoodEntry } from "@/api/diary"
 import axios from "axios"
 import { Spinner } from "@/components/ui/spinner"
 import { Plus } from "lucide-react"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
+import { searchProducts } from "@/api/search"
 
 interface AddMealItemDialogProps {
   date: string
@@ -42,6 +50,15 @@ interface FormData {
   carbs_per_100g: string
   calories_per_100g: string
   amount: string
+}
+
+interface SearchItem {
+  id: string
+  name: string
+  calories: string
+  protein: string
+  fat: string
+  carbs: string
 }
 
 const calculateCalories = (p: number, f: number, c: number): number => {
@@ -79,7 +96,10 @@ const validateFormData = (formData: FormData) => {
 const AddMealItemDialog = ({ date, onSuccess }: AddMealItemDialogProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [formData, setFormData] = useState(initialFormData)
+  const [products, setProducts] = useState([])
+  const [searchError, setSearchError] = useState("")
   const [error, setError] = useState("")
+  const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -128,6 +148,35 @@ const AddMealItemDialog = ({ date, onSuccess }: AddMealItemDialogProps) => {
       setIsLoading(false)
     }
   }
+  const handleSearch = async (searchQuery: string) => {
+    setSearchError("")
+    if (!searchQuery.trim()) {
+      setProducts([])
+      setIsSearchLoading(false)
+      return
+    }
+    setIsSearchLoading(true)
+    try {
+      const foundProducts = await searchProducts(searchQuery)
+      setProducts(foundProducts)
+      setSearchError("")
+    } catch {
+      setProducts([])
+      setSearchError("Не удалось выполнить поиск.")
+    } finally {
+      setIsSearchLoading(false)
+    }
+  }
+  const handleSelect = (item: SearchItem) => {
+    const productData = {
+      food_name: item.name,
+      protein_per_100g: item.protein,
+      fat_per_100g: item.fat,
+      carbs_per_100g: item.carbs,
+      calories_per_100g: item.calories,
+    }
+    setFormData((prev) => ({ ...productData, amount: prev.amount }))
+  }
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger
@@ -146,14 +195,43 @@ const AddMealItemDialog = ({ date, onSuccess }: AddMealItemDialogProps) => {
           <FieldSet>
             <Field>
               <FieldLabel htmlFor="food-name">Название</FieldLabel>
-              <Input
-                id="food-name"
-                name="food_name"
-                value={formData.food_name}
-                onChange={handleChange}
-                placeholder="Продукт"
-                required
-              />
+              <Combobox
+                items={products}
+                onInputValueChange={(value) => handleSearch(value)}
+                onValueChange={(value: SearchItem | null) => {
+                  if (value) handleSelect(value)
+                }}
+                onOpenChange={(open) => {
+                  if (open) handleSearch(formData.food_name)
+                }}
+              >
+                <ComboboxInput
+                  id="food-name"
+                  name="food_name"
+                  value={formData.food_name}
+                  onChange={handleChange}
+                  placeholder="Продукт"
+                  required
+                />
+                <ComboboxContent>
+                  <ComboboxEmpty>
+                    {searchError ? (
+                      <span className="text-destructive">{searchError}</span>
+                    ) : isSearchLoading ? (
+                      <Spinner />
+                    ) : (
+                      "Не найдено продуктов."
+                    )}
+                  </ComboboxEmpty>
+                  <ComboboxList>
+                    {(item) => (
+                      <ComboboxItem key={item.id} value={item}>
+                        {item.name}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </Field>
           </FieldSet>
           <FieldSeparator />
