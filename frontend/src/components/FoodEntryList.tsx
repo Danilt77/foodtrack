@@ -102,9 +102,6 @@ const FoodEntryList = ({
             </ItemDescription>
           </ItemContent>
           <ItemActions>
-            <Button variant="ghost">
-              <Pencil />
-            </Button>
             <DeleteDialog
               foodName={item.name}
               foodEntryId={item.id}
