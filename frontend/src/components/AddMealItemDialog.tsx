@@ -85,11 +85,6 @@ const validateFormData = (formData: FormData) => {
     return "Сумма БЖУ не может превышать 100 г"
   }
 
-  const calculatedCalories = calculateCalories(p, f, c)
-  const calories = Number(formData.calories_per_100g)
-  if (calories < calculatedCalories) {
-    return `Калорийность не может быть меньше ${Math.round(calculatedCalories * 100) / 100} ккал`
-  }
   return ""
 }
 
