@@ -74,7 +74,7 @@ def parse_category(category_url):
 
     products = []
 
-    for row in table.select("tbody tr"):
+    for row_index, row in enumerate(table.select("tbody tr")):
         cells = row.find_all("td")
 
         if len(cells) < 5:
@@ -86,12 +86,13 @@ def parse_category(category_url):
             continue
 
         product = {
+            "id": f"{category_url}#{row_index}",
             "name": link.get_text(strip=True),
             "calories": parse_nutrition(cells[1].get_text(strip=True)),
             "protein": parse_nutrition(cells[2].get_text(strip=True)),
             "fat": parse_nutrition(cells[3].get_text(strip=True)),
             "carbs": parse_nutrition(cells[4].get_text(strip=True)),
-        } 
+        }
 
         products.append(product)
 

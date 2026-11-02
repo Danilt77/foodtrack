@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import requests
 
 from .serializers import DailyFoodLogSerializer, FoodEntrySerializer
 from .models import DailyFoodLog, FoodEntry
@@ -42,6 +43,12 @@ def product_search(request):
             status=400
         )
 
-    products = search_products(query)
+    try:
+        products = search_products(query)
+    except requests.RequestException:
+        return Response(
+            {"error": "База продуктов временно недоступна"},
+            status=503
+        )
 
     return Response(products)
